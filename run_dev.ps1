@@ -8,7 +8,7 @@ Write-Host "🚀 Starting Newsletter System..." -ForegroundColor Cyan
 
 # 2. Start Backend
 Write-Host "Starting Backend on port 8000..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd backend; .\venv\Scripts\activate; uvicorn app.main:app --reload --port 8000"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd backend; uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000"
 
 # 3. Start Frontend
 Write-Host "Starting Frontend on port 3000..." -ForegroundColor Yellow
