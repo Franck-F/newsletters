@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.config import get_settings
+from app.routers import auth, content, newsletters, subscribers, webhooks
 
 
 @asynccontextmanager
@@ -28,6 +29,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
+app.include_router(content.router)
+app.include_router(newsletters.router)
+app.include_router(subscribers.router)
+app.include_router(webhooks.router)
 
 @app.get("/health")
 def health_check():

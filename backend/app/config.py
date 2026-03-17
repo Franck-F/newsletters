@@ -4,7 +4,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = "postgresql+psycopg://newsletters:newsletters_dev@localhost:5432/newsletters"
+    database_url: str = "postgresql+psycopg://newsletters:newsletters_dev@localhost:5433/newsletters"
 
     # JWT
     jwt_secret_key: str = "change-me-to-a-random-secret"
