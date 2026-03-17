@@ -14,10 +14,8 @@ from app.schemas.newsletter import (
 )
 from app.models.user import User
 from app.services.auth import get_current_user
-
-# Placeholder imports for services we will build next
-# from app.services.generation import generate_newsletter_draft
-# from app.services.email_sender import send_newsletter_campaign
+from app.services.generation import generate_newsletter_draft
+from app.services.email_sender import send_newsletter_campaign
 
 router = APIRouter(prefix="/api/v1/newsletters", tags=["newsletters"])
 
@@ -68,10 +66,16 @@ def generate_newsletter(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # This is a placeholder for the actual generation logic which we'll implement in services
-    # newsletter = generate_newsletter_draft(db, request.max_items, request.tags, request.from_date)
-    # return {"newsletter_id": newsletter.id, "message": "Newsletter draft generated successfully"}
-    return {"newsletter_id": 0, "message": "Generation endpoint is a placeholder for now"}
+    try:
+        newsletter = generate_newsletter_draft(
+            db=db, 
+            max_items=request.max_items, 
+            tags=request.tags, 
+            from_date=request.from_date
+        )
+        return {"newsletter_id": newsletter.id, "message": "Newsletter draft generated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{id}/send", status_code=status.HTTP_202_ACCEPTED)
 def send_newsletter(
@@ -86,10 +90,11 @@ def send_newsletter(
     if item.status == "sent":
         raise HTTPException(status_code=400, detail="Newsletter has already been sent")
         
-    # Placeholder for actual ESP integration
-    # success = send_newsletter_campaign(item)
-    # if success:
-    #     item.status = "sent"
-    #     item.sent_at = datetime.utcnow()
-    #     db.commit()
-    return {"message": "Newsletter sending initiated via ESP placeholder"}
+    success = send_newsletter_campaign(item)
+    if success:
+        item.status = "sent"
+        item.sent_at = datetime.utcnow()
+        db.commit()
+        return {"message": "Newsletter sending initiated successfully via Brevo"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to initiate newsletter send")

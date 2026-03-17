@@ -8,8 +8,8 @@ from app.models.subscriber import Subscriber, SubscriberStatus, SubscriptionToke
 from app.schemas.subscriber import SubscriberCreate, SubscriberResponse, SubscribeResponse
 from app.models.user import User
 from app.services.auth import get_current_user
-
-# from app.services.subscription import generate_subscription_token, send_confirmation_email
+from app.services.subscription import generate_subscription_token
+from app.services.email_sender import send_confirmation_email
 
 router = APIRouter(prefix="/api/v1", tags=["subscribers"])
 
@@ -44,9 +44,8 @@ def subscribe(
     db.commit()
     db.refresh(new_sub)
     
-    # Placeholder for token and email logic
-    # token = generate_subscription_token(db, new_sub.id)
-    # send_confirmation_email(new_sub.email, token.token)
+    token = generate_subscription_token(db, new_sub.id)
+    send_confirmation_email(new_sub.email, token.token)
     
     return {"message": "Subscription initiated. Please check your email to confirm.", "status": "pending_confirmation"}
 
