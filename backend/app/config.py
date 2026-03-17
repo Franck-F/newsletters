@@ -24,8 +24,8 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
 
     # Gmail
-    gmail_credentials_path: str = "credentials.json"
-    gmail_token_path: str = "token.json"
+    gmail_email: str = "you@gmail.com"
+    gmail_app_password: str = ""
     gmail_label: str = "Newsletters"
 
     # App URLs

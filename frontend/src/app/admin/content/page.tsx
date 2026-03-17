@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getContentItems, createContentItem, deleteContentItem } from '@/lib/api';
+import { getContentItems, createContentItem, deleteContentItem, ingestContent } from '@/lib/api';
 
 export default function ContentPage() {
   const router = useRouter();
@@ -11,6 +11,7 @@ export default function ContentPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', url: '', summary: '', source: '', tags: '' });
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   function getJwt() {
     const jwt = localStorage.getItem('jwt');
@@ -27,6 +28,18 @@ export default function ContentPage() {
   }
 
   useEffect(() => { load(); }, []);
+
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const res = await ingestContent(getJwt());
+      alert(`Sync complete! Added ${res.items_added.rss} from RSS and ${res.items_added.gmail} from Gmail.`);
+      await load();
+    } catch (err: any) {
+      alert(err.message);
+    }
+    setSyncing(false);
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -54,9 +67,14 @@ export default function ContentPage() {
           <h1 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 4px' }}>Content Items</h1>
           <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: 14 }}>{items.length} items collected</p>
         </div>
-        <button id="add-content-btn" className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancel' : '➕ Add Item'}
-        </button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button id="sync-content-btn" className="btn btn-secondary" onClick={handleSync} disabled={syncing}>
+            {syncing ? '⌛ Syncing…' : '🔄 Sync Content'}
+          </button>
+          <button id="add-content-btn" className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+            {showForm ? 'Cancel' : '➕ Add Item'}
+          </button>
+        </div>
       </div>
 
       {showForm && (

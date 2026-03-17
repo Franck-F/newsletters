@@ -49,6 +49,15 @@ export async function getSubscribers(jwt: string) {
 
 // ---- Content Items ----
 
+export async function ingestContent(jwt: string) {
+  const res = await fetch(`${API_BASE}/api/v1/content-items/ingest`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  if (!res.ok) throw new Error('Failed to trigger ingestion');
+  return res.json();
+}
+
 export async function getContentItems(jwt: string, params?: Record<string, string>) {
   const query = params ? '?' + new URLSearchParams(params).toString() : '';
   const res = await fetch(`${API_BASE}/api/v1/content-items${query}`, {

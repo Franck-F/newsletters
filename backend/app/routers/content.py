@@ -7,6 +7,8 @@ from app.models.content_item import ContentItem
 from app.schemas.content_item import ContentItemCreate, ContentItemResponse
 from app.models.user import User
 from app.services.auth import get_current_user
+from app.services.ingestion.rss import fetch_rss_feed
+from app.services.ingestion.gmail import fetch_from_gmail_imap
 
 router = APIRouter(prefix="/api/v1/content-items", tags=["content"])
 
@@ -69,3 +71,39 @@ def delete_content_item(
     db.delete(db_item)
     db.commit()
     return None
+
+
+@router.post("/ingest", status_code=status.HTTP_200_OK)
+def trigger_ingestion(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Manually trigger ingestion from Gmail and RSS."""
+    # For MVP, we use some defaults. In a real app these would be configurable per user.
+    rss_feeds = [
+        {"url": "https://techcrunch.com/feed/", "name": "TechCrunch"},
+        {"url": "https://feeds.feedburner.com/TheHackersNews", "name": "The Hacker News"}
+    ]
+    
+    results = {
+        "rss": 0,
+        "gmail": 0
+    }
+    
+    # 1. Fetch RSS
+    for feed in rss_feeds:
+        try:
+            results["rss"] += fetch_rss_feed(feed["url"], feed["name"], db)
+        except Exception as e:
+            logger.error(f"Error fetching RSS {feed['name']}: {e}")
+            
+    # 2. Fetch Gmail
+    try:
+        results["gmail"] = fetch_from_gmail_imap(db)
+    except Exception as e:
+        logger.error(f"Error fetching Gmail: {e}")
+        
+    return {
+        "message": "Ingestion complete",
+        "items_added": results
+    }
