@@ -1,0 +1,7 @@
+.env
+client_secret_*.json
+token.json
+credentials.json
+/venv
+/backend/venv
+/backend/.venv
